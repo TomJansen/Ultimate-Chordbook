@@ -1,0 +1,78 @@
+\ProvidesPackage{ultimatechordbook}
+\usepackage[tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in]{geometry}
+\usepackage[default]{opensans}
+\usepackage{etoolbox} %for \patchcmd
+
+\usepackage{ifpdf}
+\usepackage[chorded, onesongcolumn]{songs}
+\noversenumbers
+%\setlength{\cbarwidth}{0pt}
+%\renewcommand{\everychorus}{\textnote{Chorus:}}
+%\renewcommand{\everyverse}{\textnote{Verse:}}
+
+% width between lines:
+\baselineadj=4pt plus 2.5pt minus 0pt
+\renewcommand{\clineparams}{
+	\baselineskip=12pt
+	\lineskiplimit=0.5pt
+	\lineskip=0.5pt
+}
+
+\setlength{\songnumwidth}{0cm} %disable songnum
+
+% courier as monospace font (computer modern does not support bold monospace)
+\renewcommand{\ttdefault}{pcr}
+
+% change fonts
+\renewcommand{\lyricfont}{\ttfamily}
+\renewcommand{\printchord}{\ttfamily\bfseries}
+\renewcommand{\stitlefont}{\Huge}
+
+%change chord fingering font
+\patchcmd{\SB@finger}
+{\SB@atopfret{\sffamily\fontsize\@vipt\@vipt\selectfont#1}}
+{\SB@atopfret{\ttfamily\fontsize\@vipt\@vipt\selectfont#1}}{}{}
+
+%change barre position size and font to mono
+\patchcmd{\SB@fretnum}
+{\sffamily\fontsize\@xpt\@xpt\selectfont#1}
+{\ttfamily\small#1}{}{}
+
+% add key and tuning parameters
+\newcommand{\key}{}
+\newsongkey{key}{\def\key{}}
+{\def\key{\large{Key: #1\par}}}
+
+\newcommand{\tuning}{}
+\newsongkey{tun}{\def\tuning{}}
+{\def\tuning{\large{Tuning: #1\par}}}
+
+\renewcommand{\extendprelude}{\showrefs\Huge{\showauthors}\vspace{5px}\key\tuning}
+
+% make chord diagrams same length
+\minfrets=5
+
+% raise chord name when no open/muted strings
+% TODO horizontal center: if barre add \phantom before the chordname for every char/num in the barre position
+\patchcmd{\SB@topempty}
+  {\relax}% search
+  {{\phantom{$\times$}\relax}}% replace
+  {}{}
+
+% raise chord diagram when no fingering is present TODO still one 0 must be present for this to work!
+\patchcmd{\SB@finger}
+{\SB@topempty}
+{{\phantom{$\times$}}}
+{}{}
+
+% hack to add newpage before the end of the song
+% sadly, we need to disable \sbarheight because otherwise we get an extra page at the end
+% TODO should be possible to fix but idk
+\setlength{\sbarheight}{0pt}
+
+
+\patchcmd{\SB@endsong}
+  {\endgroup}% search
+  {\endgroup\newpage}% replace
+  {}{}
+
